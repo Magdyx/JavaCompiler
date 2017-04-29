@@ -1,0 +1,342 @@
+METHOD_BODY
+17 19
+C
+-> id with ERROR
+-> ; with EPSILON
+-> int with ERROR
+-> float with ERROR
+-> if with ERROR
+-> ( with ERROR
+-> ) with EPSILON
+-> { with ERROR
+-> } with ERROR
+-> else with ERROR
+-> while with ERROR
+-> = with ERROR
+-> relop with EPSILON
+-> addop with addop TERM C
+-> mulop with ERROR
+-> num with ERROR
+-> + with ERROR
+-> - with ERROR
+-> $ with ERROR
+D
+-> id with ERROR
+-> ; with EPSILON
+-> int with ERROR
+-> float with ERROR
+-> if with ERROR
+-> ( with ERROR
+-> ) with EPSILON
+-> { with ERROR
+-> } with ERROR
+-> else with ERROR
+-> while with ERROR
+-> = with ERROR
+-> relop with EPSILON
+-> addop with EPSILON
+-> mulop with mulop FACTOR D
+-> num with ERROR
+-> + with ERROR
+-> - with ERROR
+-> $ with ERROR
+TERM
+-> id with FACTOR D
+-> ; with SYNC
+-> int with ERROR
+-> float with ERROR
+-> if with ERROR
+-> ( with FACTOR D
+-> ) with SYNC
+-> { with ERROR
+-> } with ERROR
+-> else with ERROR
+-> while with ERROR
+-> = with ERROR
+-> relop with SYNC
+-> addop with SYNC
+-> mulop with ERROR
+-> num with FACTOR D
+-> + with ERROR
+-> - with ERROR
+-> $ with ERROR
+Z
+-> id with ERROR
+-> ; with EPSILON
+-> int with ERROR
+-> float with ERROR
+-> if with ERROR
+-> ( with ERROR
+-> ) with EPSILON
+-> { with ERROR
+-> } with ERROR
+-> else with ERROR
+-> while with ERROR
+-> = with ERROR
+-> relop with relop SIMPLE_EXPRESSION
+-> addop with ERROR
+-> mulop with ERROR
+-> num with ERROR
+-> + with ERROR
+-> - with ERROR
+-> $ with ERROR
+SIMPLE_EXPRESSION
+-> id with TERM C
+-> ; with SYNC
+-> int with ERROR
+-> float with ERROR
+-> if with ERROR
+-> ( with TERM C
+-> ) with SYNC
+-> { with ERROR
+-> } with ERROR
+-> else with ERROR
+-> while with ERROR
+-> = with ERROR
+-> relop with SYNC
+-> addop with ERROR
+-> mulop with ERROR
+-> num with TERM C
+-> + with SIGN TERM C
+-> - with SIGN TERM C
+-> $ with ERROR
+METHOD_BODY
+-> id with STATEMENT_LIST
+-> ; with ERROR
+-> int with STATEMENT_LIST
+-> float with STATEMENT_LIST
+-> if with STATEMENT_LIST
+-> ( with ERROR
+-> ) with ERROR
+-> { with ERROR
+-> } with ERROR
+-> else with ERROR
+-> while with STATEMENT_LIST
+-> = with ERROR
+-> relop with ERROR
+-> addop with ERROR
+-> mulop with ERROR
+-> num with ERROR
+-> + with ERROR
+-> - with ERROR
+-> $ with SYNC
+STATEMENT_LIST
+-> id with STATEMENT V
+-> ; with ERROR
+-> int with STATEMENT V
+-> float with STATEMENT V
+-> if with STATEMENT V
+-> ( with ERROR
+-> ) with ERROR
+-> { with ERROR
+-> } with ERROR
+-> else with ERROR
+-> while with STATEMENT V
+-> = with ERROR
+-> relop with ERROR
+-> addop with ERROR
+-> mulop with ERROR
+-> num with ERROR
+-> + with ERROR
+-> - with ERROR
+-> $ with SYNC
+V
+-> id with STATEMENT V
+-> ; with ERROR
+-> int with STATEMENT V
+-> float with STATEMENT V
+-> if with STATEMENT V
+-> ( with ERROR
+-> ) with ERROR
+-> { with ERROR
+-> } with ERROR
+-> else with ERROR
+-> while with STATEMENT V
+-> = with ERROR
+-> relop with ERROR
+-> addop with ERROR
+-> mulop with ERROR
+-> num with ERROR
+-> + with ERROR
+-> - with ERROR
+-> $ with EPSILON
+STATEMENT
+-> id with ASSIGNMENT
+-> ; with ERROR
+-> int with DECLARATION
+-> float with DECLARATION
+-> if with IF
+-> ( with ERROR
+-> ) with ERROR
+-> { with ERROR
+-> } with SYNC
+-> else with ERROR
+-> while with WHILE
+-> = with ERROR
+-> relop with ERROR
+-> addop with ERROR
+-> mulop with ERROR
+-> num with ERROR
+-> + with ERROR
+-> - with ERROR
+-> $ with SYNC
+FACTOR
+-> id with id
+-> ; with SYNC
+-> int with ERROR
+-> float with ERROR
+-> if with ERROR
+-> ( with ( EXPRESSION )
+-> ) with SYNC
+-> { with ERROR
+-> } with ERROR
+-> else with ERROR
+-> while with ERROR
+-> = with ERROR
+-> relop with SYNC
+-> addop with SYNC
+-> mulop with SYNC
+-> num with num
+-> + with ERROR
+-> - with ERROR
+-> $ with ERROR
+DECLARATION
+-> id with SYNC
+-> ; with ERROR
+-> int with PRIMITIVE_TYPE id ;
+-> float with PRIMITIVE_TYPE id ;
+-> if with SYNC
+-> ( with ERROR
+-> ) with ERROR
+-> { with ERROR
+-> } with SYNC
+-> else with ERROR
+-> while with SYNC
+-> = with ERROR
+-> relop with ERROR
+-> addop with ERROR
+-> mulop with ERROR
+-> num with ERROR
+-> + with ERROR
+-> - with ERROR
+-> $ with SYNC
+IF
+-> id with SYNC
+-> ; with ERROR
+-> int with SYNC
+-> float with SYNC
+-> if with if ( EXPRESSION ) { STATEMENT } else { STATEMENT }
+-> ( with ERROR
+-> ) with ERROR
+-> { with ERROR
+-> } with SYNC
+-> else with ERROR
+-> while with SYNC
+-> = with ERROR
+-> relop with ERROR
+-> addop with ERROR
+-> mulop with ERROR
+-> num with ERROR
+-> + with ERROR
+-> - with ERROR
+-> $ with SYNC
+PRIMITIVE_TYPE
+-> id with SYNC
+-> ; with ERROR
+-> int with int
+-> float with float
+-> if with ERROR
+-> ( with ERROR
+-> ) with ERROR
+-> { with ERROR
+-> } with ERROR
+-> else with ERROR
+-> while with ERROR
+-> = with ERROR
+-> relop with ERROR
+-> addop with ERROR
+-> mulop with ERROR
+-> num with ERROR
+-> + with ERROR
+-> - with ERROR
+-> $ with ERROR
+WHILE
+-> id with SYNC
+-> ; with ERROR
+-> int with SYNC
+-> float with SYNC
+-> if with SYNC
+-> ( with ERROR
+-> ) with ERROR
+-> { with ERROR
+-> } with SYNC
+-> else with ERROR
+-> while with while ( EXPRESSION ) { STATEMENT }
+-> = with ERROR
+-> relop with ERROR
+-> addop with ERROR
+-> mulop with ERROR
+-> num with ERROR
+-> + with ERROR
+-> - with ERROR
+-> $ with SYNC
+ASSIGNMENT
+-> id with id = EXPRESSION ;
+-> ; with ERROR
+-> int with SYNC
+-> float with SYNC
+-> if with SYNC
+-> ( with ERROR
+-> ) with ERROR
+-> { with ERROR
+-> } with SYNC
+-> else with ERROR
+-> while with SYNC
+-> = with ERROR
+-> relop with ERROR
+-> addop with ERROR
+-> mulop with ERROR
+-> num with ERROR
+-> + with ERROR
+-> - with ERROR
+-> $ with SYNC
+SIGN
+-> id with SYNC
+-> ; with ERROR
+-> int with ERROR
+-> float with ERROR
+-> if with ERROR
+-> ( with SYNC
+-> ) with ERROR
+-> { with ERROR
+-> } with ERROR
+-> else with ERROR
+-> while with ERROR
+-> = with ERROR
+-> relop with ERROR
+-> addop with ERROR
+-> mulop with ERROR
+-> num with SYNC
+-> + with +
+-> - with -
+-> $ with ERROR
+EXPRESSION
+-> id with SIMPLE_EXPRESSION Z
+-> ; with SYNC
+-> int with ERROR
+-> float with ERROR
+-> if with ERROR
+-> ( with SIMPLE_EXPRESSION Z
+-> ) with SYNC
+-> { with ERROR
+-> } with ERROR
+-> else with ERROR
+-> while with ERROR
+-> = with ERROR
+-> relop with ERROR
+-> addop with ERROR
+-> mulop with ERROR
+-> num with SIMPLE_EXPRESSION Z
+-> + with SIMPLE_EXPRESSION Z
+-> - with SIMPLE_EXPRESSION Z
+-> $ with ERROR

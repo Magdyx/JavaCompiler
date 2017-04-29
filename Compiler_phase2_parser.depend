@@ -1,0 +1,20 @@
+# depslib dependency file v1.0
+1493111378 source:c:\users\magdy\documents\codecpp\compiler_phase2_parser\main.cpp
+	<iostream>
+	"phase2.h"
+
+1493110214 c:\users\magdy\documents\codecpp\compiler_phase2_parser\phase2.h
+
+1493124880 source:c:\users\magdy\documents\codecpp\compiler_phase2_parser\phase2.cpp
+	<iostream>
+	<string>
+	<vector>
+	<map>
+	<unordered_map>
+	<fstream>
+	<sstream>
+	<stack>
+	<set>
+	<cstdlib>
+	"phase2.h"
+
