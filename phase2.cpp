@@ -142,65 +142,60 @@ void read_grammar(char* filename) {
     bool is_there_epsilon = false;
     int line_begining = 0;
     vector<Symbol> rhs;
-    string grammar_buffer = read_grammar_file(filename);
-    int grammar_buffer_length = grammar_buffer.length();
+    ifstream in(filename);
+    //string grammar_buffer = read_grammar_file(filename);
+    int grammar_buffer_length;
 
-    for(int i = 0; is_in_string_bounds(i,grammar_buffer_length); i++) {
-        char current_char = grammar_buffer.at(i);
-        if ( is_white_space(current_char) ) {
-            //skip
-            //just not error
-            //looking forward to get the newline character out of this
-        } else if ( is_new_production(current_char) ) {
-            //find a hash# ? begin new production rule and wrap up the previous one
-            if(is_rhs == false) {
-                error_grammar_file(EMPTY_LHS_OR_RHS);
-                //error
-                //must get to rhs first
-            }
-            if(is_there_epsilon && rhs.empty()) {
-                nonterminal_epsilon[lhs] = lhs;
-            } else {
-                add_production(lhs,rhs);
-            }
-            lhs = "";
-            vector<Symbol> temp;
-            rhs = temp; //reinitialize rhs;
-            line_begining = i+1;
-            is_rhs = false;
-        } else if ( is_separator(current_char) && !is_rhs) { //separator between LHS and RHS
-            string lhs_untrimmed = grammar_buffer.substr(line_begining,i-line_begining);
-            lhs = trim_string(lhs_untrimmed); //check if working
-            define_non_terminal(lhs);
-            is_rhs = true;
-        } else if (is_in_string_bounds(i,grammar_buffer_length-1)
-                   && is_epsilon(current_char, grammar_buffer.at(i+1)) && is_rhs ) { //epsilon handling
-            //if the epsilon is alone then push it to rhs and add it as production then empty the rhs
-            //if not empty then its presence is not wanted
-            is_there_epsilon = true;
-            i++;
-        } else if ( is_or_char(current_char) && is_rhs ) { // or character
-            if(is_there_epsilon && rhs.empty()) {
-                nonterminal_epsilon[lhs] = lhs;
-            } else {
-                add_production(lhs,rhs);
-            }
-            vector<Symbol> temp;
-            rhs = temp; //reinitialize rhs;
-            is_there_epsilon = false;
-        } else if ( is_terminal(current_char) && is_rhs ) { // terminal
-            string terminal_buffer = "";
-            while(true) {
-                i++;
-                if ( !is_in_string_bounds(i,grammar_buffer_length) ) {
+
+    for( string grammar_buffer; getline( in, grammar_buffer); )
+    {
+        grammar_buffer_length = grammar_buffer.length();
+        for(int i = 0; is_in_string_bounds(i,grammar_buffer_length); i++) {
+            char current_char = grammar_buffer.at(i);
+            if ( is_white_space(current_char) ) {
+                //skip
+                //just not error
+                //looking forward to get the newline character out of this
+            } else if ( is_new_production(current_char) ) {
+                //find a hash# ? begin new production rule and wrap up the previous one
+                if(is_rhs == false) {
+                    error_grammar_file(EMPTY_LHS_OR_RHS);
                     //error
-                    //open terminal quotation without close
-                    //terminate
-                    error_grammar_file(UNCLOSED_TERMINAL_QUOTATION);
-                    break;
+                    //must get to rhs first
                 }
-                current_char = grammar_buffer.at(i);
-                if( is_escape_char(current_char) ) {
+                if(is_there_epsilon && rhs.empty()) {
+                    nonterminal_epsilon[lhs] = lhs;
+                } else {
+                    add_production(lhs,rhs);
+                }
+                lhs = "";
+                vector<Symbol> temp;
+                rhs = temp; //reinitialize rhs;
+                line_begining = i+1;
+                is_rhs = false;
+            } else if ( is_separator(current_char) && !is_rhs) { //separator between LHS and RHS
+                string lhs_untrimmed = grammar_buffer.substr(line_begining,i-line_begining);
+                lhs = trim_string(lhs_untrimmed); //check if working
+                define_non_terminal(lhs);
+                is_rhs = true;
+            } else if (is_in_string_bounds(i,grammar_buffer_length-1)
+                       && is_epsilon(current_char, grammar_buffer.at(i+1)) && is_rhs ) { //epsilon handling
+                //if the epsilon is alone then push it to rhs and add it as production then empty the rhs
+                //if not empty then its presence is not wanted
+                is_there_epsilon = true;
+                i++;
+            } else if ( is_or_char(current_char) && is_rhs ) { // or character
+                if(is_there_epsilon && rhs.empty()) {
+                    nonterminal_epsilon[lhs] = lhs;
+                } else {
+                    add_production(lhs,rhs);
+                }
+                vector<Symbol> temp;
+                rhs = temp; //reinitialize rhs;
+                is_there_epsilon = false;
+            } else if ( is_terminal(current_char) && is_rhs ) { // terminal
+                string terminal_buffer = "";
+                while(true) {
                     i++;
                     if ( !is_in_string_bounds(i,grammar_buffer_length) ) {
                         //error
@@ -210,66 +205,77 @@ void read_grammar(char* filename) {
                         break;
                     }
                     current_char = grammar_buffer.at(i);
-                    if(is_reserved(current_char)) {
-                        terminal_buffer += current_char;
-                        continue;
-                    }
+                    if( is_escape_char(current_char) ) {
+                        i++;
+                        if ( !is_in_string_bounds(i,grammar_buffer_length) ) {
+                            //error
+                            //open terminal quotation without close
+                            //terminate
+                            error_grammar_file(UNCLOSED_TERMINAL_QUOTATION);
+                            break;
+                        }
+                        current_char = grammar_buffer.at(i);
+                        if(is_reserved(current_char)) {
+                            terminal_buffer += current_char;
+                            continue;
+                        }
 
+                    }
+                    if( !is_terminal_closing(grammar_buffer.at(i))  ) {
+                        terminal_buffer += current_char;
+                    } else {
+                        break;
+                    }
                 }
-                if( !is_terminal_closing(grammar_buffer.at(i))  ) {
-                    terminal_buffer += current_char;
-                } else {
-                    break;
-                }
-            }
-            //loop done add to terminal
-            add_to_terminals(terminal_buffer); //not acceptable terminal
-            Symbol new_symbol;
-            new_symbol.terminal = true;
-            new_symbol.value = terminal_buffer;
-            rhs.push_back(new_symbol);
-        } else if ( is_nonterminal_first_char(current_char) ) { // non terminal
-            string nonterminal_buffer = "";
-            while (true) {
-                nonterminal_buffer += current_char;
-                i++;
-                if ( !is_in_string_bounds(i,grammar_buffer_length) ) {
-                    //not error
-                    //end reading and add to non-terminal list
-                    break;
-                }
-                current_char = grammar_buffer.at(i);
-                if( is_escape_char(current_char) ) {
+                //loop done add to terminal
+                add_to_terminals(terminal_buffer); //not acceptable terminal
+                Symbol new_symbol;
+                new_symbol.terminal = true;
+                new_symbol.value = terminal_buffer;
+                rhs.push_back(new_symbol);
+            } else if ( is_nonterminal_first_char(current_char) ) { // non terminal
+                string nonterminal_buffer = "";
+                while (true) {
+                    nonterminal_buffer += current_char;
                     i++;
                     if ( !is_in_string_bounds(i,grammar_buffer_length) ) {
-                        //error
-                        //open terminal quotation without close
-                        //terminate
+                        //not error
+                        //end reading and add to non-terminal list
                         break;
                     }
                     current_char = grammar_buffer.at(i);
-                    if(is_reserved(current_char)) {
-                        nonterminal_buffer += current_char;
-                        continue;
-                    }
+                    if( is_escape_char(current_char) ) {
+                        i++;
+                        if ( !is_in_string_bounds(i,grammar_buffer_length) ) {
+                            //error
+                            //open terminal quotation without close
+                            //terminate
+                            break;
+                        }
+                        current_char = grammar_buffer.at(i);
+                        if(is_reserved(current_char)) {
+                            nonterminal_buffer += current_char;
+                            continue;
+                        }
 
+                    }
+                    if(!is_nonterminal(current_char)) { //current character is to be handled again through main loop
+                        i--;
+                        break;
+                    }
                 }
-                if(!is_nonterminal(current_char)) { //current character is to be handled again through main loop
-                    i--;
-                    break;
+                // add to non terminal list
+                add_to_non_terminal(nonterminal_buffer);
+                if(is_rhs) {
+                    Symbol new_symbol;
+                    new_symbol.terminal = false;
+                    new_symbol.value = nonterminal_buffer;
+                    rhs.push_back(new_symbol);
                 }
+            } else {
+                //error
+                error_grammar_file(UNKNOWN_LINE);
             }
-            // add to non terminal list
-            add_to_non_terminal(nonterminal_buffer);
-            if(is_rhs) {
-                Symbol new_symbol;
-                new_symbol.terminal = false;
-                new_symbol.value = nonterminal_buffer;
-                rhs.push_back(new_symbol);
-            }
-        } else {
-            //error
-            error_grammar_file(UNKNOWN_LINE);
         }
     }
     if(is_rhs == false) {
@@ -282,14 +288,13 @@ void read_grammar(char* filename) {
     } else {
         add_production(lhs,rhs);
     }
-//    check_grammar_rules();
     if(!verify_nonterminals_valid()) {
         error_grammar_file(0);
         //error
         // a non-terminal is not defined
         // terminate
     }
-
+    in.close();
 }
 
 void make_parsing_table() {
@@ -314,7 +319,7 @@ void get_first(string non_terminal) {
         //loop in rules
         //infinite recursion
         //error
-        cout<<"ERROR : Infinite Recursion"<<endl;
+        error_grammar_file(LEFT_RECURSION_ERROR);
     }
     ////iterates on production with or
     for(vector<Production>::iterator it = productions[non_terminal].begin();
@@ -335,9 +340,7 @@ void get_first(string non_terminal) {
                 for(map<string,Production>::iterator firsts_it = first[it->symbols[index].value].begin();
                         firsts_it != first[it->symbols[index].value].end(); firsts_it++) {
                     if(first_terminals.count(firsts_it->first) && first_terminals[firsts_it->first].symbols !=  it->symbols) {
-                        //have same symbol form different production
-                        //so it is not left factorized
-                        cout<<"ERROR : Not left factorized"<<endl;
+                        error_grammar_file(LEFT_FACTORING_ERROR);
                     }
                     first_terminals.insert(make_pair(firsts_it->first,*it));
                 }
@@ -465,39 +468,6 @@ void initialize_follow() {
     }
 }
 
-void print_first() {
-    cout<<"size : "<<first.size()<<endl;
-    for(unordered_map<string,map<string, Production>>::iterator it = first.begin();
-            it != first.end(); it++) {
-        cout<<it->first<<" : ";
-        for(map<string, Production>::iterator it2 = it->second.begin();
-                it2 != it->second.end(); it2++) {
-            cout<<"\t"<<it2->first <<"-> ";
-            for(Symbol sy :it2->second.symbols ) {
-                cout<<sy.value;
-            }
-            /*for(vector<Symbol>::iterator it3 = (it2->second).symbols.begin();                    it3 = (it2->second).symbols.end() ; it3++){
-                cout<<it->value;
-            }*/
-            cout<<endl;
-        }
-        cout<<endl;
-    }
-}
-
-void print_follow() {
-    for(unordered_map<string,set<string>>::iterator it = follow.begin();
-            it != follow.end(); it++) {
-        cout<<it->first<<endl;
-        cout<<"\t";
-        for(string s : it->second) {
-            cout<<", "<<s;
-        }
-        cout<<endl;
-        cout<<endl;
-    }
-}
-
 /********Auxiliary functions******************/
 bool is_white_space(char c) {
     return (c == ' ' || c == '\t' || c == '\n')? true:false;
@@ -551,7 +521,6 @@ bool is_in_string_bounds(int i, int length) {
 
 /*
 add to terminals vector if not empty nor repeated
-//TODO: is acceptable terminal
 return true if addition is successful (acceptable terminal)
 */
 bool add_to_terminals(string terminal) {
@@ -571,8 +540,6 @@ bool add_to_terminals(string terminal) {
 
 /*
 adds to non-terminal vector if not repeated
-"can't think of a case where it is not valid"
-so returns nothing
 */
 void add_to_non_terminal(string non_terminal) {
     if(non_terminals.empty())
@@ -640,6 +607,9 @@ void add_production(string lhs, vector<Symbol> rhs) {
     productions[lhs] = prod_tmp;
 }
 
+/*
+remove white spaces from the first and end of string
+*/
 string trim_string(string str) {
     size_t first = str.find_first_not_of(" \t\n");
     if (first == string::npos)
@@ -682,6 +652,9 @@ void allocate_nonterminals() {
     }
 }
 
+/*
+convert production struct to a string for printing in files
+*/
 string concat_production(Production prod) {
     string result = "";
     vector<Symbol> prod_tmp = prod.symbols;
@@ -697,15 +670,13 @@ string concat_production(Production prod) {
     return result;
 }
 
+/*
+initialize all parsing table to empty string
+to help finding ambiguity errors easily
+*/
 void initialize_parsing_table() {
     int terminals_size = terminals.size()+1;
     int nonterminal_size = non_terminals.size();
-    /*
-    parsing_table = new string*[nonterminal_size];
-    for(int i = 0; i < nonterminal_size; ++i) {
-        parsing_table[i] = new string[terminals_size];
-    }
-    */
     parsing_table.resize(nonterminal_size);
     for(int i = 0; i < nonterminal_size; ++i) {
         parsing_table[i].resize(terminals_size);
@@ -716,16 +687,9 @@ void initialize_parsing_table() {
             parsing_table[i][j] = "";
 }
 
-void destroy_parsing_table() {
-    /*
-    int parsing_table_size = sizeof(parsing_table[0])/sizeof(parsing_table[0][0]);
-    for(int i = 0; i < parsing_table_size; i++) {
-        delete [] parsing_table[i];
-    }
-    delete [] parsing_table;
-    */
-}
-
+/*
+adds to parsing table and report ambiguity errors if any
+*/
 void add_to_parsing_table(string terminal, string nonterminal, string table_entry) {
     int terminal_index = terminals_index[terminal];
     int nonterminal_index = nonterminals_index[nonterminal];
@@ -801,6 +765,7 @@ void compute_table_entries() {
     fill_errors_parsing_table();
 }
 
+//take value of terminals_index map and return its key
 string get_terminal_of_index(int index) {
     for(unordered_map<string,int>::iterator it = terminals_index.begin(); it != terminals_index.end(); it++) {
         if(it->second == index)
@@ -808,6 +773,7 @@ string get_terminal_of_index(int index) {
     }
 }
 
+//take value of nonterminals_index map and return its key
 string get_nonterminal_of_index(int index) {
     for(unordered_map<string,int>::iterator it = nonterminals_index.begin(); it != nonterminals_index.end(); it++) {
         if(it->second == index)
@@ -815,7 +781,10 @@ string get_nonterminal_of_index(int index) {
     }
 }
 
-
+/*
+print parsing table in program to file parsing_table.txt
+in project folder for the parser to be able to parse code
+*/
 void print_parsing_table() {
     ofstream outputFile("parsing_table.txt");
     int rows = parsing_table.size();
@@ -838,92 +807,39 @@ void print_parsing_table() {
     outputFile.close();
 }
 
-/*
-nonterminal
--> terminal
-with expression
-*/
-void read_parsing_table() {
-    int rows, cols;
-    string terminal, nonterminal, expression, temp;
-    vector<vector<string>> parsing_table;
-    vector<pair<string,string>> terminals_read; // pair of terminals and expressions
-    unordered_map<string, int> terminals_no;
-    unordered_map<string, int> nonterminals_no;
-
-    ifstream inputFile("parsing_table.txt");
-    inputFile >> starting_lhs;
-    inputFile >> rows >> cols;
-    parsing_table.resize(rows);
-    for(int i = 0; i < rows; i++) {
-        parsing_table[i].resize(cols);
-    }
-
-    for(int i = 0; i < rows; i++) {
-        inputFile >> nonterminal;
-        nonterminals_no[nonterminal] = i;
-        for(int j = 0; j < cols; j++) {
-            inputFile >> temp;
-            if(temp != "->") {
-                //error
-                error_grammar_file(ERROR_READING_PARSING_TABLE);
+//debug function to print first map in stdout
+void print_first() {
+    cout<<"size : "<<first.size()<<endl;
+    for(unordered_map<string,map<string, Production>>::iterator it = first.begin();
+            it != first.end(); it++) {
+        cout<<it->first<<" : ";
+        for(map<string, Production>::iterator it2 = it->second.begin();
+                it2 != it->second.end(); it2++) {
+            cout<<"\t"<<it2->first <<"-> ";
+            for(Symbol sy :it2->second.symbols ) {
+                cout<<sy.value;
             }
-            inputFile >> terminal;
-            if(i == 0) { //allocate in map
-                terminals_no[terminal] = j;
-            }
-            inputFile >> temp;
-            if(temp != "with") {
-                //error
-                error_grammar_file(ERROR_READING_PARSING_TABLE);
-            }
-            getline(inputFile, expression);
-            expression = trim_string(expression);
-            parsing_table[i][j] = expression;
+            /*for(vector<Symbol>::iterator it3 = (it2->second).symbols.begin();                    it3 = (it2->second).symbols.end() ; it3++){
+                cout<<it->value;
+            }*/
+            cout<<endl;
         }
-    }
-    inputFile.close();
-}
-
-void check_grammar_rules() {
-    for(unordered_map<string,vector<Production>>::iterator it = productions.begin();
-            it != productions.end(); it++) {
-        string lhs = it->first;
-        //check left recursion
-        vector<Production> or_prods = productions[lhs];
-        string result_left_recursion = detect_left_recursion(lhs,lhs);
-        if(result_left_recursion != "") {
-            cout << "LEFT LECURSION" << endl;
-            //solve
-        }
-
-
+        cout<<endl;
     }
 }
 
-string detect_left_recursion(string lhs, string lhs_iterator) {
-    vector<Production> or_prods = productions[lhs_iterator];
-    vector<string> returns(or_prods.size());
-    int i = 0;
-    for(vector<Production>::iterator it = or_prods.begin(); it != or_prods.end(); it++) {
-
-        vector<Symbol> symbols = it->symbols;
-        Symbol first_symbol = symbols[0];
-        if(!first_symbol.terminal) {
-            if(lhs == lhs_iterator)
-                returns[i] = lhs;
-            else if(lhs == first_symbol.value)
-                return lhs_iterator;
-            else
-                returns[i] = detect_left_recursion(lhs, first_symbol.value);
+//debug function to print follow map in stdout
+void print_follow() {
+    for(unordered_map<string,set<string>>::iterator it = follow.begin();
+            it != follow.end(); it++) {
+        cout<<it->first<<endl;
+        cout<<"\t";
+        for(string s : it->second) {
+            cout<<", "<<s;
         }
-        i++;
+        cout<<endl;
+        cout<<endl;
     }
-    for(int j = 0; j < returns.size(); j++) {
-        if(returns[j] != "")
-            return returns[j];
-    }
-    return "";
 }
 
 void error_grammar_file(int err_code) {
@@ -958,6 +874,14 @@ void error_grammar_file(int err_code) {
     }
     case UNKNOWN_LINE: {
         cout << "Error: A line is not understandable" << endl;
+        break;
+    }
+    case LEFT_FACTORING_ERROR: {
+        cout << "Error: A left factoring issue found" << endl;
+        break;
+    }
+    case LEFT_RECURSION_ERROR: {
+        cout << "Error: A left recursion issue found" << endl;
         break;
     }
     default:
