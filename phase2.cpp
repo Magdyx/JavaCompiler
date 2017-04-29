@@ -352,6 +352,8 @@ void get_first(string non_terminal) {
 
             } else {
                 //terminal at first
+                if(first_terminals.count(it->symbols[index].value) && it-> symbols != first_terminals[it->symbols[index].value].symbols)
+                    error_grammar_file(LEFT_FACTORING_ERROR);
                 first_terminals.insert(make_pair(it->symbols[index].value, *it));
                 break;
             }
